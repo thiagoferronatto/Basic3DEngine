@@ -247,12 +247,43 @@ void Scene::render(const Window &window, const std::function<void()> &f) {
   glCheckProgramLinkage(program);          // checking linkage status
   glCheck(glUseProgram(program));          // sending program to vram
 
+  auto mLoc         {glGetUniformLocation(program, "M"          )};
+  auto vLoc         {glGetUniformLocation(program, "V"          )};
+  auto pLoc         {glGetUniformLocation(program, "P"          )};
+  auto materialKaLoc{glGetUniformLocation(program, "material.Ka")};
+  auto materialKdLoc{glGetUniformLocation(program, "material.Kd")};
+  auto materialKsLoc{glGetUniformLocation(program, "material.Ks")};
+  auto materialNsLoc{glGetUniformLocation(program, "material.Ns")};
+  auto materialNiLoc{glGetUniformLocation(program, "material.Ni")};
+  auto materialDLoc {glGetUniformLocation(program, "material.d" )};
+  auto selectedLoc  {glGetUniformLocation(program, "selected"   )};
+  auto texturedLoc  {glGetUniformLocation(program, "textured"   )};
+  auto lightCountLoc{glGetUniformLocation(program, "lightCount" )};
+  auto toneMapLoc   {glGetUniformLocation(program, "toneMap"    )};
+  auto wireframeLoc {glGetUniformLocation(program, "wireframe"  )};
+  auto desaturateLoc{glGetUniformLocation(program, "desaturate" )};
+  auto ambientLoc   {glGetUniformLocation(program, "ambient"    )};
+  GLuint lightColorLocs[100];
+  GLuint lightTransformLocs[100];
+  for (int i = 0; i < 100; ++i) {
+    char uniformName[23];
+    sprintf_s(uniformName, "lights[%d].color", i);
+    lightColorLocs[i] = glGetUniformLocation(program, uniformName);
+    sprintf_s(uniformName, "lights[%d].transform", i);
+    lightTransformLocs[i] = glGetUniformLocation(program, uniformName);
+  }
+
+  glCheck(glEnable(GL_DEPTH_TEST));
+  glCheck(
+      glPolygonMode(GL_FRONT_AND_BACK, options.wireframe ? GL_LINE : GL_FILL));
+
   logMsg("[INFO] Starting rendering loop\n");
   window.show();
   while (!window.shouldClose()) {
     auto start = std::chrono::steady_clock::now();
 
     glClearColor(ambient.x, ambient.y, ambient.z, 1);
+
     // GUI
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
@@ -442,36 +473,35 @@ void Scene::render(const Window &window, const std::function<void()> &f) {
     float lspd{_dt * 25.0f}, aspd{_dt * 150.0f};
     if (window.keyIsPressed(GLFW_KEY_ESCAPE))
       _cameras[0]->setPosition({});
-    if (window.keyIsPressed(GLFW_KEY_W))
+    if (window.keyIsPressed('W'))
       _cameras[0]->translate(_cameras[0]->transform() * vec4{0, 0, -lspd, 0});
-    if (window.keyIsPressed(GLFW_KEY_A))
+    if (window.keyIsPressed('A'))
       _cameras[0]->translate(_cameras[0]->transform() * vec4{-lspd, 0, 0, 0});
-    if (window.keyIsPressed(GLFW_KEY_S))
+    if (window.keyIsPressed('S'))
       _cameras[0]->translate(_cameras[0]->transform() * vec4{0, 0, lspd, 0});
-    if (window.keyIsPressed(GLFW_KEY_D))
+    if (window.keyIsPressed('D'))
       _cameras[0]->translate(_cameras[0]->transform() * vec4{lspd, 0, 0, 0});
     if (window.keyIsPressed(GLFW_KEY_SPACE))
       _cameras[0]->translate({0, lspd, 0});
     if (window.keyIsPressed(GLFW_KEY_LEFT_CONTROL))
       _cameras[0]->translate({0, -lspd, 0});
-    if (window.keyIsPressed(GLFW_KEY_Q))
+    if (window.keyIsPressed('Q'))
       _cameras[0]->rotate({0, glm::radians(-aspd), 0});
-    if (window.keyIsPressed(GLFW_KEY_E))
+    if (window.keyIsPressed('E'))
       _cameras[0]->rotate({0, glm::radians(aspd), 0});
-    if (window.keyIsPressed(GLFW_KEY_R))
+    if (window.keyIsPressed('R'))
       _cameras[0]->rotate(_cameras[0]->transform() *
                           vec4{glm::radians(-aspd), 0, 0, 0});
-    if (window.keyIsPressed(GLFW_KEY_F))
+    if (window.keyIsPressed('F'))
       _cameras[0]->rotate(_cameras[0]->transform() *
                           vec4{glm::radians(aspd), 0, 0, 0});
-    if (window.keyIsPressed(GLFW_KEY_Z))
+    if (window.keyIsPressed('Z'))
       _cameras[0]->setFov(fmaxf(_cameras[0]->fov() - 1.0f, 0.1));
-    if (window.keyIsPressed(GLFW_KEY_C))
+    if (window.keyIsPressed('C'))
       _cameras[0]->setFov(fminf(_cameras[0]->fov() + 1.0f, 179));
-    if (window.keyIsPressed(GLFW_KEY_U)) {
-      if (!uWasPressedInPrevFrame) {
+    if (window.keyIsPressed('U')) {
+      if (!uWasPressedInPrevFrame)
         drawUserInterface = !drawUserInterface;
-      }
       uWasPressedInPrevFrame = true;
     } else {
       uWasPressedInPrevFrame = false;
@@ -481,44 +511,24 @@ void Scene::render(const Window &window, const std::function<void()> &f) {
     // light uniforms
     unsigned l{};
     for (auto &light : _lights) {
-      auto lightColorLoc{glGetUniformLocation(
-          program,
-          (std::string{"lights["} + std::to_string(l) + "].color").c_str())};
       auto trueLightColor{light->intensity * light->color};
-      glCheck(glUniform3fv(lightColorLoc, 1, &trueLightColor.x));
-      auto lightTransformLoc{glGetUniformLocation(
-          program, (std::string{"lights["} + std::to_string(l) + "].transform")
-                       .c_str())};
-      glCheck(glUniformMatrix4fv(lightTransformLoc, 1, GL_FALSE,
+      glCheck(glUniform3fv(lightColorLocs[l], 1, &trueLightColor.x));
+      glCheck(glUniformMatrix4fv(lightTransformLocs[l], 1, GL_FALSE,
                                  &light->transform()[0].x));
       ++l;
     }
-    auto lightCountLoc{glGetUniformLocation(program, "lightCount")};
     glUniform1ui(lightCountLoc, l);
 
-    // ambient uniform
-    auto ambientLoc{glGetUniformLocation(program, "ambient")};
     glCheck(glUniform3fv(ambientLoc, 1, &ambient.x));
-
-    auto vLoc{glGetUniformLocation(program, "V")};
     glCheck(glUniformMatrix4fv(vLoc, 1, GL_FALSE,
                                &_cameras[0]->worldToCamera()[0].x));
-    auto pLoc{glGetUniformLocation(program, "P")};
     glCheck(glUniformMatrix4fv(pLoc, 1, GL_FALSE,
                                &_cameras[0]->perspective()[0].x));
 
     // UI state and rendering options
-    auto toneMapLoc{glGetUniformLocation(program, "toneMap")};
     glCheck(glUniform1i(toneMapLoc, GLint(options.toneMap)));
-    auto wireframeLoc{glGetUniformLocation(program, "wireframe")};
     glCheck(glUniform1i(wireframeLoc, GLint(options.wireframe)));
-    auto desaturateLoc{glGetUniformLocation(program, "desaturate")};
     glCheck(glUniform1i(desaturateLoc, GLint(options.desaturate)));
-
-    // setting up for the draw call
-    glCheck(glEnable(GL_DEPTH_TEST));
-    glCheck(glPolygonMode(GL_FRONT_AND_BACK,
-                          options.wireframe ? GL_LINE : GL_FILL));
 
     unsigned i = 0;
     for (auto obj : _actors) {
@@ -541,26 +551,16 @@ void Scene::render(const Window &window, const std::function<void()> &f) {
 
       if (auto actor{dynamic_cast<Actor *>(obj)}) {
         // uniforms
-        auto mLoc{glGetUniformLocation(program, "M")};
         glCheck(
             glUniformMatrix4fv(mLoc, 1, GL_FALSE, &actor->transform()[0].x));
-        auto materialKaLoc{glGetUniformLocation(program, "material.Ka")};
         glCheck(glUniform3fv(materialKaLoc, 1, &actor->material.Ka.x));
-        auto materialKdLoc{glGetUniformLocation(program, "material.Kd")};
         glCheck(glUniform3fv(materialKdLoc, 1, &actor->material.Kd.x));
-        auto materialKsLoc{glGetUniformLocation(program, "material.Ks")};
         glCheck(glUniform3fv(materialKsLoc, 1, &actor->material.Ks.x));
-        auto materialNsLoc{glGetUniformLocation(program, "material.Ns")};
         glCheck(glUniform1f(materialNsLoc, actor->material.Ns));
-        auto materialNiLoc{glGetUniformLocation(program, "material.Ni")};
         glCheck(glUniform1f(materialNiLoc, actor->material.Ni));
-        auto materialDLoc{glGetUniformLocation(program, "material.d")};
         glCheck(glUniform1f(materialDLoc, actor->material.d));
-
-        auto selectedLoc{glGetUniformLocation(program, "selected")};
         glUniform1i(selectedLoc,
                     GLint(dynamic_cast<Actor *>(_currentObject) == actor));
-        auto texturedLoc{glGetUniformLocation(program, "textured")};
         glCheck(
             glUniform1i(texturedLoc, GLint(!actor->material.map_Kd.empty())));
 
@@ -569,14 +569,14 @@ void Scene::render(const Window &window, const std::function<void()> &f) {
                                3 * GLsizei(actor->mesh->triangles().size()),
                                GL_UNSIGNED_INT, nullptr));
 
-        auto actorAmount{_actors.size()};
+        auto prevActorAmount{_actors.size()};
 
         // calling custom loop function after drawing
         f();
 
         // just in case the user dynamically adds more actors
-        if (_actors.size() != actorAmount)
-          transferActors(buffers, textures, actorAmount, _actors);
+        if (_actors.size() != prevActorAmount)
+          transferActors(buffers, textures, prevActorAmount, _actors);
 
       } else {
         logMsg("[WARNING] Attempted to draw unsupported shape, ignoring "

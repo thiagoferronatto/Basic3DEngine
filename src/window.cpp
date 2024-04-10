@@ -24,10 +24,10 @@ Window::Window(size_t width, size_t height, const char *title)
     glfwSetInputMode(_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 
   glfwSwapInterval(0);
-  glfwSetFramebufferSizeCallback(_window,
-                                 [](GLFWwindow *window, int width, int height) {
-                                   glViewport(0, 0, width, height);
-                                 });
+  glfwSetWindowSizeCallback(_window,
+                            [](GLFWwindow *window, int width, int height) {
+                              glViewport(0, 0, width, height);
+                            });
 
   // ImGui
   IMGUI_CHECKVERSION();

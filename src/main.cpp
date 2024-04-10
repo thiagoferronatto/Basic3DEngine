@@ -20,7 +20,7 @@ static void addDefaultLights(Scene &scene) {
 }
 
 static void addDefaultObjects(Scene &scene) {
-  constexpr int xdim{3}, ydim{3}, zdim{3};
+  constexpr int xdim{10}, ydim{10}, zdim{10};
   auto mesh{new TriangleMesh{TriangleMeshData::cube()}};
 
   for (int i = 0; i < xdim; ++i) {
@@ -68,10 +68,10 @@ int main() {
   auto defaultScene{makeDefaultScene()};
 
   // TODO: make broadphase scene-independent
-  DbvtBroadphase broadphase{defaultScene};
+  //DbvtBroadphase broadphase{defaultScene};
 
   defaultScene.render(window, [&] { //
-    broadphase.collide();
+    //broadphase.collide();
   });
 
   return 0;
