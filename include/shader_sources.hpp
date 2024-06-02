@@ -74,14 +74,15 @@ bool fragmentIsNearEdge(void) {
 }
 
 void main(void) {
-  if (selected) {
-    fragColor = vec4(1, 0, 0, 1);
-    return;
-  }
   if (wireframe) {
     fragColor = vec4(0, 0.5, 1, 1);
     if (selected)
       fragColor = 1.0 - fragColor;
+    return;
+  }
+
+  if (selected) {
+    fragColor = vec4(0, 0.5, 1, 1);
     return;
   }
 
@@ -160,15 +161,15 @@ in vec2 v_uv;
 out vec4 fragColor;
 
 void main(void) {
-  if (selected) {
-    fragColor = vec4(1, 0, 0, 1);
-    return;
-  }
-
   if (wireframe) {
     fragColor = vec4(0, 0.5, 1, 1);
     if (selected)
       fragColor = 1.0 - fragColor;
+    return;
+  }
+
+  if (selected) {
+    fragColor = vec4(0, 0.5, 1, 1);
     return;
   }
 

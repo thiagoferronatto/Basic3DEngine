@@ -21,12 +21,7 @@ int main() {
   scene.addCamera(cam);
   scene.addLight(light);
 
-  // TODO: make broadphase scene-independent
-  //DbvtBroadphase broadphase{defaultScene};
-
-  scene.render(window, [&] { //
-    //broadphase.collide();
-  });
+  scene.render(window);
 
   return 0;
 }

@@ -561,12 +561,12 @@ void Scene::render(const Window &window, const std::function<void()> &f) {
         glCheck(glUniform1i(texturedLoc, GLint(!actor->material.map_Kd.empty())));
 
         // drawing elements
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL - options.wireframe);
         glCheck(glDrawElements(GL_TRIANGLES,
                                3 * GLsizei(actor->mesh->triangles().size()),
                                GL_UNSIGNED_INT, nullptr));
 
-        if (currentActorIsSelected) {
+        if (currentActorIsSelected && !options.wireframe) {
           glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
           glUniform1i(selectedLoc, 1);
           glDrawElements(GL_TRIANGLES,
@@ -579,7 +579,7 @@ void Scene::render(const Window &window, const std::function<void()> &f) {
         // calling custom loop function after drawing
         f();
 
-        // just in case the user dynamically adds more actors
+        // just in case the user dynamically adds more actors within f()
         if (_actors.size() != prevActorAmount)
           transferActors(buffers, textures, prevActorAmount, _actors);
 
