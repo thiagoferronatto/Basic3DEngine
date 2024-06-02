@@ -16,38 +16,33 @@
 
 static bool drawUserInterface = false;
 
-void Scene::addCamera(std::shared_ptr<Camera> camera) {
+void Scene::addCamera(Camera* camera) {
   _cameras.push_back(camera);
   _addChildren(camera);
 }
 
-void Scene::addLight(std::shared_ptr<Light> light) {
+void Scene::addLight(Light* light) {
   _lights.push_back(light);
   _addChildren(light);
 }
 
-const std::vector<std::shared_ptr<Actor>> &Scene::actors() const {
-  return _actors;
-}
+const std::vector<Actor *>& Scene::actors() const { return _actors; }
 
-const std::vector<std::shared_ptr<Light>> &Scene::lights() const {
+const std::vector<Light*>& Scene::lights() const {
   return _lights;
 }
 
-void Scene::addActor(std::shared_ptr<Actor> actor) {
-  _actors.push_back(actor);
-  _addChildren(actor);
-}
+void Scene::addActor(Actor *actor) { _actors.push_back(actor); }
 
-void Scene::_addChildren(std::shared_ptr<Object> object) {
-  for (auto child : object->children()) {
-    if (auto actor{std::dynamic_pointer_cast<Actor>(child)})
-      addActor(actor);
-    else if (auto camera{std::dynamic_pointer_cast<Camera>(child)})
-      addCamera(camera);
-    else if (auto light{std::dynamic_pointer_cast<Light>(child)})
-      addLight(light);
-  }
+void Scene::_addChildren(Object* object) {
+  // for (auto child : object->children()) {
+  //   if (auto actor{std::dynamic_pointer_cast<Actor>(child)})
+  //     addActor(actor);
+  //   else if (auto camera{std::dynamic_pointer_cast<Camera>(child)})
+  //     addCamera(camera);
+  //   else if (auto light{std::dynamic_pointer_cast<Light>(child)})
+  //     addLight(light);
+  // }
 }
 
 static void transferActors(std::shared_ptr<GLuint[]> &buffers,
@@ -82,10 +77,10 @@ static void transferActors(std::shared_ptr<GLuint[]> &buffers,
   size_t i{};
   logMsg("[INFO] Transferring scene data to GPU...\n");
   for (auto obj : actors) {
-    if (auto mesh{std::dynamic_pointer_cast<TriangleMesh>(obj)}) {
-      auto &v{mesh->vertices()}, &n{mesh->normals()};
-      auto &uv{mesh->uv()};
-      auto &t{mesh->triangles()};
+    if (auto actor{dynamic_cast<Actor *>(obj)}) {
+      auto &v{actor->mesh->vertices()}, &n{actor->mesh->normals()};
+      auto &uv{actor->mesh->uv()};
+      auto &t{actor->mesh->triangles()};
 
       // transferring vertex positions to VRAM
       glCheck(glBindBuffer(GL_ARRAY_BUFFER, buffers[i]));
@@ -123,10 +118,11 @@ static void transferActors(std::shared_ptr<GLuint[]> &buffers,
 
       // transferring triangle vertex indices to VRAM
       glCheck(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[i + 3 * objAmt]));
-      glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER, t.size() * sizeof(Triangle),
-                           t.data(), GL_STATIC_DRAW));
+      glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+                           t.size() * sizeof(IndexedTriangle), t.data(),
+                           GL_STATIC_DRAW));
 
-      if (auto textureFile{mesh->material.map_Kd}; !textureFile.empty()) {
+      if (auto textureFile{actor->material.map_Kd}; !textureFile.empty()) {
         PPM bah{textureFile};
         glCheck(glBindTexture(GL_TEXTURE_2D, textures[i]));
         glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
@@ -175,8 +171,9 @@ static void makeMainMenu(Scene *scene, const Window &window,
               auto fileName{filePath.filename()};
               if (fileName.extension() == ".obj" &&
                   ImGui::MenuItem(fileName.string().c_str())) {
-                scene->addActor(std::make_shared<TriangleMesh>(
-                    "TEMPORARY", TriangleMeshData::fromObj(filePath.string())));
+                auto mesh{new TriangleMesh(
+                    TriangleMeshData::fromObj(filePath.string()))};
+                scene->addActor(new Actor{fileName.string(), mesh});
                 transferActors(buffers, textures, prevObjAmt, scene->actors());
               }
             }
@@ -190,13 +187,13 @@ static void makeMainMenu(Scene *scene, const Window &window,
         if (ImGui::BeginMenu("Scene")) {
           if (ImGui::BeginMenu("Add premade actor")) {
             if (ImGui::MenuItem("Cube")) {
-              scene->addActor(std::make_shared<TriangleMesh>(
-                  "TEMPORARY", TriangleMeshData::cube()));
+              scene->addActor(new Actor{
+                  "TEMPORARY", new TriangleMesh{TriangleMeshData::cube()}});
               transferActors(buffers, textures, prevObjAmt, scene->actors());
             }
             if (ImGui::MenuItem("Plane")) {
-              scene->addActor(std::make_shared<TriangleMesh>(
-                  "TEMPORARY", TriangleMeshData::plane()));
+              scene->addActor(new Actor{
+                  "TEMPORARY", new TriangleMesh{TriangleMeshData::plane()}});
               transferActors(buffers, textures, prevObjAmt, scene->actors());
             }
             ImGui::EndMenu();
@@ -220,6 +217,8 @@ static void makeMainMenu(Scene *scene, const Window &window,
 void Scene::render(const Window &window, const std::function<void()> &f) {
   using namespace std::chrono;
 
+  if (_cameras.empty()) return;
+
   std::shared_ptr<GLuint[]> buffers{}, textures{};
   auto objAmt{_actors.size()};
   transferActors(buffers, textures, objAmt, _actors);
@@ -230,13 +229,63 @@ void Scene::render(const Window &window, const std::function<void()> &f) {
 
   bool uWasPressedInPrevFrame = false;
 
+  // vertex shader
+  auto vsLoc{glCreateShader(GL_VERTEX_SHADER)};
+  glCheck(glShaderSource(vsLoc, 1, &triangleMeshVertexShader, nullptr));
+  glCheck(glCompileShader(vsLoc));
+  glCheckShaderCompilation(vsLoc);
+
+  // fragment shader
+  auto fsLoc{glCreateShader(GL_FRAGMENT_SHADER)};
+  glCheck(glShaderSource(fsLoc, 1, &triangleMeshPbrtFragShader, nullptr));
+  glCheck(glCompileShader(fsLoc));
+  glCheckShaderCompilation(fsLoc);
+
+  // program
+  auto program{glCreateProgram()};
+  glCheck(glAttachShader(program, vsLoc)); // sending vs to vram
+  glCheck(glAttachShader(program, fsLoc)); // sending fs to vram
+  glCheck(glLinkProgram(program));         // linking program
+  glCheckProgramLinkage(program);          // checking linkage status
+  glCheck(glUseProgram(program));          // sending program to vram
+
+  auto mLoc         {glGetUniformLocation(program, "M"          )};
+  auto vLoc         {glGetUniformLocation(program, "V"          )};
+  auto pLoc         {glGetUniformLocation(program, "P"          )};
+  auto materialKaLoc{glGetUniformLocation(program, "material.Ka")};
+  auto materialKdLoc{glGetUniformLocation(program, "material.Kd")};
+  auto materialKsLoc{glGetUniformLocation(program, "material.Ks")};
+  auto materialNsLoc{glGetUniformLocation(program, "material.Ns")};
+  auto materialNiLoc{glGetUniformLocation(program, "material.Ni")};
+  auto materialDLoc {glGetUniformLocation(program, "material.d" )};
+  auto selectedLoc  {glGetUniformLocation(program, "selected"   )};
+  auto texturedLoc  {glGetUniformLocation(program, "textured"   )};
+  auto lightCountLoc{glGetUniformLocation(program, "lightCount" )};
+  auto toneMapLoc   {glGetUniformLocation(program, "toneMap"    )};
+  auto wireframeLoc {glGetUniformLocation(program, "wireframe"  )};
+  auto desaturateLoc{glGetUniformLocation(program, "desaturate" )};
+  auto ambientLoc   {glGetUniformLocation(program, "ambient"    )};
+  GLuint lightColorLocs[100];
+  GLuint lightTransformLocs[100];
+  for (int i = 0; i < 100; ++i) {
+    char uniformName[23];
+    sprintf_s(uniformName, "lights[%d].color", i);
+    lightColorLocs[i] = glGetUniformLocation(program, uniformName);
+    sprintf_s(uniformName, "lights[%d].transform", i);
+    lightTransformLocs[i] = glGetUniformLocation(program, uniformName);
+  }
+
+  glCheck(glEnable(GL_DEPTH_TEST));
+  glCheck(
+      glPolygonMode(GL_FRONT_AND_BACK, options.wireframe ? GL_LINE : GL_FILL));
+
   logMsg("[INFO] Starting rendering loop\n");
-  float dt{};
   window.show();
   while (!window.shouldClose()) {
     auto start = std::chrono::steady_clock::now();
 
     glClearColor(ambient.x, ambient.y, ambient.z, 1);
+
     // GUI
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
@@ -246,7 +295,7 @@ void Scene::render(const Window &window, const std::function<void()> &f) {
     ImGui::SetNextWindowPos({21, 21});
     ImGui::SetNextWindowSize({100, 75});
     if (ImGui::Begin("Performance")) {
-      ImGui::Text("%.2f fps", 1.0f / dt);
+      ImGui::Text("%.2f fps", 1.0f / _dt);
       ImGui::End();
     }
 
@@ -303,7 +352,7 @@ void Scene::render(const Window &window, const std::function<void()> &f) {
             if (ImGui::CollapsingHeader("Lights",
                                         ImGuiTreeNodeFlags_DefaultOpen)) {
               if (ImGui::Button("Add light"))
-                addLight(std::make_shared<Light>(vec3{1}));
+                addLight(new Light{vec3{1}});
               auto it{_lights.end()};
               for (auto light : _lights) {
                 if (ImGui::MenuItem(light->name().c_str()))
@@ -345,10 +394,9 @@ void Scene::render(const Window &window, const std::function<void()> &f) {
                                       ImGuiTreeNodeFlags_DefaultOpen)) {
             auto pos{_currentObject->position()};
             if (ImGui::DragFloat3("Position", &pos.x, 0.1f)) {
-              auto invt{glm::inverse(_currentObject->transform())};
               _currentObject->translate(
                   vec4{pos - _currentObject->position(), 0});
-              if (auto cam{std::dynamic_pointer_cast<Camera>(_currentObject)})
+              if (auto cam{dynamic_cast<Camera *>(_currentObject)})
                 cam->updateWorldToCamera();
             }
             vec3 rotation{_currentObject->rotation()};
@@ -356,16 +404,15 @@ void Scene::render(const Window &window, const std::function<void()> &f) {
                                   "XYZ")) {
               auto tmp{rotation - _currentObject->rotation()};
               _currentObject->rotate(tmp);
-              if (auto cam{std::dynamic_pointer_cast<Camera>(_currentObject)})
+              if (auto cam{dynamic_cast<Camera *>(_currentObject)})
                 cam->updateWorldToCamera();
             }
             vec3 scale{_currentObject->scale()};
-            if (ImGui::DragFloat3("Scale", &scale.x, 0.1f, 0.001f, 1e5f)) {
+            if (ImGui::DragFloat3("Scale", &scale.x, 0.1f, 0.001f, 1e5f))
               _currentObject->setScale(scale);
-            }
           }
 
-          if (auto actor{std::dynamic_pointer_cast<Actor>(_currentObject)}) {
+          if (auto actor{dynamic_cast<Actor *>(_currentObject)}) {
             if (ImGui::CollapsingHeader("Material",
                                         ImGuiTreeNodeFlags_DefaultOpen)) {
               ImGui::ColorEdit3("Ambient (Ka)", &actor->material.Ka.x);
@@ -374,14 +421,14 @@ void Scene::render(const Window &window, const std::function<void()> &f) {
               ImGui::DragFloat("Shininess (Ns)", &actor->material.Ns, 0.1, 0);
             }
           }
-          if (auto light{std::dynamic_pointer_cast<Light>(_currentObject)}) {
+          if (auto light{dynamic_cast<Light *>(_currentObject)}) {
             if (ImGui::CollapsingHeader("Light properties",
                                         ImGuiTreeNodeFlags_DefaultOpen)) {
               ImGui::ColorEdit3("Color", &light->color.x);
               ImGui::DragFloat("Intensity", &light->intensity, 0.1f, 0, 1e10);
             }
           }
-          if (auto cam{std::dynamic_pointer_cast<Camera>(_currentObject)}) {
+          if (auto cam{dynamic_cast<Camera *>(_currentObject)}) {
             if (ImGui::CollapsingHeader("Camera properties",
                                         ImGuiTreeNodeFlags_DefaultOpen)) {
               if (auto fov{cam->fov()};
@@ -422,48 +469,63 @@ void Scene::render(const Window &window, const std::function<void()> &f) {
       ImGui::End();
     }
 
-    glCheck(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT |
-                    GL_STENCIL_BUFFER_BIT));
+    glCheck(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
     // DEBUG CONTROLS
-    constexpr float lspd{0.5}, aspd{2.0};
-    if (window.keyIsPressed(GLFW_KEY_ESCAPE))
-      _cameras[0]->setPosition({});
-    if (window.keyIsPressed(GLFW_KEY_W))
-      _cameras[0]->translate(_cameras[0]->transform() * vec4{0, 0, -lspd, 0});
-    if (window.keyIsPressed(GLFW_KEY_A))
-      _cameras[0]->translate(_cameras[0]->transform() * vec4{-lspd, 0, 0, 0});
-    if (window.keyIsPressed(GLFW_KEY_S))
-      _cameras[0]->translate(_cameras[0]->transform() * vec4{0, 0, lspd, 0});
-    if (window.keyIsPressed(GLFW_KEY_D))
-      _cameras[0]->translate(_cameras[0]->transform() * vec4{lspd, 0, 0, 0});
-    if (window.keyIsPressed(GLFW_KEY_SPACE))
-      _cameras[0]->translate({0, lspd, 0});
-    if (window.keyIsPressed(GLFW_KEY_LEFT_CONTROL))
-      _cameras[0]->translate({0, -lspd, 0});
-    if (window.keyIsPressed(GLFW_KEY_Q))
+    float lspd{_dt * 25.0f}, aspd{_dt * 150.0f};
+    vec3 displacement{};
+    if (window.keyIsPressed(GLFW_KEY_ESCAPE)) _cameras[0]->setPosition({});
+    if (window.keyIsPressed('W')) displacement += vec3{_cameras[0]->transform() * vec4{0, 0, -1, 0}};
+    if (window.keyIsPressed('A')) displacement += vec3{_cameras[0]->transform() * vec4{-1, 0, 0, 0}};
+    if (window.keyIsPressed('S')) displacement += vec3{_cameras[0]->transform() * vec4{0, 0, 1, 0}};
+    if (window.keyIsPressed('D')) displacement += vec3{_cameras[0]->transform() * vec4{1, 0, 0, 0}};
+    if (window.keyIsPressed(GLFW_KEY_SPACE)) displacement += vec3{0, 1, 0};
+    if (window.keyIsPressed(GLFW_KEY_LEFT_CONTROL)) displacement += vec3{0, -1, 0};
+    if (dot(displacement, displacement) > std::numeric_limits<float>::epsilon())
+      displacement = normalize(displacement) * lspd;
+    _cameras[0]->translate(displacement);
+    if (window.keyIsPressed('Q'))
       _cameras[0]->rotate({0, glm::radians(-aspd), 0});
-    if (window.keyIsPressed(GLFW_KEY_E))
+    if (window.keyIsPressed('E'))
       _cameras[0]->rotate({0, glm::radians(aspd), 0});
-    if (window.keyIsPressed(GLFW_KEY_R))
-      _cameras[0]->rotate(_cameras[0]->transform() *
-                          vec4{glm::radians(-aspd), 0, 0, 0});
-    if (window.keyIsPressed(GLFW_KEY_F))
-      _cameras[0]->rotate(_cameras[0]->transform() *
-                          vec4{glm::radians(aspd), 0, 0, 0});
-    if (window.keyIsPressed(GLFW_KEY_Z))
+    if (window.keyIsPressed('R'))
+      _cameras[0]->rotate(_cameras[0]->transform() * vec4{glm::radians(-aspd), 0, 0, 0});
+    if (window.keyIsPressed('F'))
+      _cameras[0]->rotate(_cameras[0]->transform() * vec4{glm::radians(aspd), 0, 0, 0});
+    if (window.keyIsPressed('Z'))
       _cameras[0]->setFov(fmaxf(_cameras[0]->fov() - 1.0f, 0.1));
-    if (window.keyIsPressed(GLFW_KEY_C))
+    if (window.keyIsPressed('C'))
       _cameras[0]->setFov(fminf(_cameras[0]->fov() + 1.0f, 179));
-    if (window.keyIsPressed(GLFW_KEY_U)) {
-      if (!uWasPressedInPrevFrame) {
+    if (window.keyIsPressed('U')) {
+      if (!uWasPressedInPrevFrame)
         drawUserInterface = !drawUserInterface;
-      }
       uWasPressedInPrevFrame = true;
     } else {
       uWasPressedInPrevFrame = false;
     }
     //  END OF DEBUG CONTROLS
+
+    // light uniforms
+    unsigned l{};
+    for (auto &light : _lights) {
+      auto trueLightColor{light->intensity * light->color};
+      glCheck(glUniform3fv(lightColorLocs[l], 1, &trueLightColor.x));
+      glCheck(glUniformMatrix4fv(lightTransformLocs[l], 1, GL_FALSE,
+                                 &light->transform()[0].x));
+      ++l;
+    }
+    glUniform1ui(lightCountLoc, l);
+
+    glCheck(glUniform3fv(ambientLoc, 1, &ambient.x));
+    glCheck(glUniformMatrix4fv(vLoc, 1, GL_FALSE,
+                               &_cameras[0]->worldToCamera()[0].x));
+    glCheck(glUniformMatrix4fv(pLoc, 1, GL_FALSE,
+                               &_cameras[0]->perspective()[0].x));
+
+    // UI state and rendering options
+    glCheck(glUniform1i(toneMapLoc, GLint(options.toneMap)));
+    glCheck(glUniform1i(wireframeLoc, GLint(options.wireframe)));
+    glCheck(glUniform1i(desaturateLoc, GLint(options.desaturate)));
 
     unsigned i = 0;
     for (auto obj : _actors) {
@@ -484,105 +546,42 @@ void Scene::render(const Window &window, const std::function<void()> &f) {
       // adding EBO to VAO
       glCheck(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[i + 3 * objAmt]));
 
-      if (auto mesh{std::dynamic_pointer_cast<TriangleMesh>(obj)}) {
-        // vertex shader
-        auto vsLoc{glCreateShader(GL_VERTEX_SHADER)};
-        glCheck(glShaderSource(vsLoc, 1, &triangleMeshVertexShader, nullptr));
-        glCheck(glCompileShader(vsLoc));
-        glCheckShaderCompilation(vsLoc);
-
-        // fragment shader
-        auto fsLoc{glCreateShader(GL_FRAGMENT_SHADER)};
-        glCheck(glShaderSource(fsLoc, 1, &triangleMeshFragShader, nullptr));
-        glCheck(glCompileShader(fsLoc));
-        glCheckShaderCompilation(fsLoc);
-
-        // program
-        auto program{glCreateProgram()};
-        glCheck(glAttachShader(program, vsLoc)); // sending vs to vram
-        glCheck(glDeleteShader(vsLoc));          // vs in vram, freeing ram
-        glCheck(glAttachShader(program, fsLoc)); // sending fs to vram
-        glCheck(glDeleteShader(fsLoc));          // fs in vram, freeing ram
-        glCheck(glLinkProgram(program));         // linking program
-        glCheckProgramLinkage(program);          // checking linkage status
-        glCheck(glUseProgram(program));          // sending program to vram
-        glCheck(glDeleteProgram(program));       // program in vram, freeing ram
+      if (auto actor{dynamic_cast<Actor *>(obj)}) {
+        auto currentActorIsSelected{dynamic_cast<Actor *>(_currentObject) == actor};
 
         // uniforms
-        auto mLoc{glGetUniformLocation(program, "M")};
-        glCheck(glUniformMatrix4fv(mLoc, 1, GL_FALSE, &mesh->transform()[0].x));
-        auto vLoc{glGetUniformLocation(program, "V")};
-        glCheck(glUniformMatrix4fv(vLoc, 1, GL_FALSE,
-                                   &_cameras[0]->worldToCamera()[0].x));
-        auto pLoc{glGetUniformLocation(program, "P")};
-        glCheck(glUniformMatrix4fv(pLoc, 1, GL_FALSE,
-                                   &_cameras[0]->perspective()[0].x));
-        auto materialKaLoc{glGetUniformLocation(program, "material.Ka")};
-        glCheck(glUniform3fv(materialKaLoc, 1, &mesh->material.Ka.x));
-        auto materialKdLoc{glGetUniformLocation(program, "material.Kd")};
-        glCheck(glUniform3fv(materialKdLoc, 1, &mesh->material.Kd.x));
-        auto materialKsLoc{glGetUniformLocation(program, "material.Ks")};
-        glCheck(glUniform3fv(materialKsLoc, 1, &mesh->material.Ks.x));
-        auto materialNsLoc{glGetUniformLocation(program, "material.Ns")};
-        glCheck(glUniform1f(materialNsLoc, mesh->material.Ns));
-        auto materialNiLoc{glGetUniformLocation(program, "material.Ni")};
-        glCheck(glUniform1f(materialNiLoc, mesh->material.Ni));
-        auto materialDLoc{glGetUniformLocation(program, "material.d")};
-        glCheck(glUniform1f(materialDLoc, mesh->material.d));
-        auto ambientLoc{glGetUniformLocation(program, "ambient")};
-        glCheck(glUniform3fv(ambientLoc, 1, &ambient.x));
-
-        // UI state and rendering options
-        auto selectedLoc{glGetUniformLocation(program, "selected")};
-        glUniform1i(selectedLoc, GLint(std::dynamic_pointer_cast<TriangleMesh>(
-                                           _currentObject) == mesh));
-        auto toneMapLoc{glGetUniformLocation(program, "toneMap")};
-        glCheck(glUniform1i(toneMapLoc, GLint(options.toneMap)));
-        auto wireframeLoc{glGetUniformLocation(program, "wireframe")};
-        glCheck(glUniform1i(wireframeLoc, GLint(options.wireframe)));
-        auto desaturateLoc{glGetUniformLocation(program, "desaturate")};
-        glCheck(glUniform1i(desaturateLoc, GLint(options.desaturate)));
-        auto texturedLoc{glGetUniformLocation(program, "textured")};
-        glCheck(
-            glUniform1i(texturedLoc, GLint(!mesh->material.map_Kd.empty())));
-
-        unsigned l{};
-        for (auto &light : _lights) {
-          auto lightColorLoc{glGetUniformLocation(
-              program, (std::string{"lights["} + std::to_string(l) + "].color")
-                           .c_str())};
-          auto trueLightColor{light->intensity * light->color};
-          glCheck(glUniform3fv(lightColorLoc, 1, &trueLightColor.x));
-          auto lightTransformLoc{glGetUniformLocation(
-              program,
-              (std::string{"lights["} + std::to_string(l) + "].transform")
-                  .c_str())};
-          glCheck(glUniformMatrix4fv(lightTransformLoc, 1, GL_FALSE,
-                                     &light->transform()[0].x));
-          ++l;
-        }
-
-        auto lightCountLoc{glGetUniformLocation(program, "lightCount")};
-        glUniform1ui(lightCountLoc, l);
-
-        // setting up for the draw call
-        glCheck(glEnable(GL_DEPTH_TEST));
-        glCheck(glPolygonMode(GL_FRONT_AND_BACK,
-                              options.wireframe ? GL_LINE : GL_FILL));
+        glCheck(glUniformMatrix4fv(mLoc, 1, GL_FALSE, &actor->transform()[0].x));
+        glCheck(glUniform3fv(materialKaLoc, 1, &actor->material.Ka.x));
+        glCheck(glUniform3fv(materialKdLoc, 1, &actor->material.Kd.x));
+        glCheck(glUniform3fv(materialKsLoc, 1, &actor->material.Ks.x));
+        glCheck(glUniform1f(materialNsLoc, actor->material.Ns));
+        glCheck(glUniform1f(materialNiLoc, actor->material.Ni));
+        glCheck(glUniform1f(materialDLoc, actor->material.d));
+        glUniform1i(selectedLoc, 0);
+        glCheck(glUniform1i(texturedLoc, GLint(!actor->material.map_Kd.empty())));
 
         // drawing elements
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         glCheck(glDrawElements(GL_TRIANGLES,
-                               3 * GLsizei(mesh->triangles().size()),
+                               3 * GLsizei(actor->mesh->triangles().size()),
                                GL_UNSIGNED_INT, nullptr));
 
-        auto actorAmount{_actors.size()};
+        if (currentActorIsSelected) {
+          glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+          glUniform1i(selectedLoc, 1);
+          glDrawElements(GL_TRIANGLES,
+                         3 * GLsizei(actor->mesh->triangles().size()),
+                         GL_UNSIGNED_INT, nullptr);
+        }
+
+        auto prevActorAmount{_actors.size()};
 
         // calling custom loop function after drawing
         f();
 
         // just in case the user dynamically adds more actors
-        if (auto newAmount = _actors.size(); newAmount != actorAmount)
-          transferActors(buffers, textures, actorAmount, _actors);
+        if (_actors.size() != prevActorAmount)
+          transferActors(buffers, textures, prevActorAmount, _actors);
 
       } else {
         logMsg("[WARNING] Attempted to draw unsupported shape, ignoring "
@@ -599,8 +598,13 @@ void Scene::render(const Window &window, const std::function<void()> &f) {
     window.pollEvents();
 
     auto end = steady_clock::now();
-    dt = 1e-6f * duration_cast<microseconds>(end - start).count();
+    _dt = 1e-6f * duration_cast<microseconds>(end - start).count();
   }
+
+  glCheck(glDeleteShader(vsLoc));    // vs in vram, freeing ram
+  glCheck(glDeleteShader(fsLoc));    // fs in vram, freeing ram
+  glCheck(glDeleteProgram(program)); // program in vram, freeing ram
+
   logMsg("[INFO] Rendering loop ended\n");
   logMsg("[INFO] Freeing GPU memory\n");
 

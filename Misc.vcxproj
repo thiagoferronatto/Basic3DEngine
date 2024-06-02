@@ -128,7 +128,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>include;dependencies;dependencies/glad/include;dependencies/glm</AdditionalIncludeDirectories>
-      <FloatingPointModel>Strict</FloatingPointModel>
+      <FloatingPointModel>Fast</FloatingPointModel>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
@@ -168,6 +168,7 @@
     <ClInclude Include="include\shader_sources.hpp" />
     <ClInclude Include="include\camera.hpp" />
     <ClInclude Include="include\custom_assert.hpp" />
+    <ClInclude Include="include\SharedObject.h" />
     <ClInclude Include="include\simulation_step.hpp" />
     <ClInclude Include="include\transformable_object.hpp" />
     <ClInclude Include="include\TriangleMeshBVH.h" />

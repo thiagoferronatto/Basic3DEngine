@@ -9,7 +9,6 @@ Window::Window(size_t width, size_t height, const char *title)
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
   glfwWindowHint(GLFW_SAMPLES, 8);
-  glfwSwapInterval(0);
   _window = glfwCreateWindow(GLsizei(width), GLsizei(height), title, nullptr,
                              nullptr);
   if (!_window) {
@@ -24,10 +23,11 @@ Window::Window(size_t width, size_t height, const char *title)
   if (glfwRawMouseMotionSupported())
     glfwSetInputMode(_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 
-  glfwSetFramebufferSizeCallback(_window,
-                                 [](GLFWwindow *window, int width, int height) {
-                                   glViewport(0, 0, width, height);
-                                 });
+  glfwSwapInterval(0);
+  glfwSetWindowSizeCallback(_window,
+                            [](GLFWwindow *window, int width, int height) {
+                              glViewport(0, 0, width, height);
+                            });
 
   // ImGui
   IMGUI_CHECKVERSION();
@@ -42,6 +42,7 @@ Window::Window(size_t width, size_t height, const char *title)
     io.Fonts->Build();
     io.FontDefault = segoeUi;
   }
+  glEnable(GL_FRAMEBUFFER_SRGB);
 }
 
 Window::~Window() {
