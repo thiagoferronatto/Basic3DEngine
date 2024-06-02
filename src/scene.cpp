@@ -16,25 +16,25 @@
 
 static bool drawUserInterface = false;
 
-void Scene::addCamera(std::shared_ptr<Camera> camera) {
+void Scene::addCamera(Camera* camera) {
   _cameras.push_back(camera);
   _addChildren(camera);
 }
 
-void Scene::addLight(std::shared_ptr<Light> light) {
+void Scene::addLight(Light* light) {
   _lights.push_back(light);
   _addChildren(light);
 }
 
-const std::vector<Actor *> &Scene::actors() const { return _actors; }
+const std::vector<Actor *>& Scene::actors() const { return _actors; }
 
-const std::vector<std::shared_ptr<Light>> &Scene::lights() const {
+const std::vector<Light*>& Scene::lights() const {
   return _lights;
 }
 
 void Scene::addActor(Actor *actor) { _actors.push_back(actor); }
 
-void Scene::_addChildren(std::shared_ptr<Object> object) {
+void Scene::_addChildren(Object* object) {
   // for (auto child : object->children()) {
   //   if (auto actor{std::dynamic_pointer_cast<Actor>(child)})
   //     addActor(actor);
@@ -217,6 +217,8 @@ static void makeMainMenu(Scene *scene, const Window &window,
 void Scene::render(const Window &window, const std::function<void()> &f) {
   using namespace std::chrono;
 
+  if (_cameras.empty()) return;
+
   std::shared_ptr<GLuint[]> buffers{}, textures{};
   auto objAmt{_actors.size()};
   transferActors(buffers, textures, objAmt, _actors);
@@ -332,11 +334,11 @@ void Scene::render(const Window &window, const std::function<void()> &f) {
               auto it{_cameras.end()};
               for (auto &cam : _cameras) {
                 if (ImGui::MenuItem(cam->name().c_str()))
-                  _currentObject = cam.get();
+                  _currentObject = cam;
                 if (_cameras.size() > 1) {
                   if (ImGui::BeginPopupContextItem()) {
                     if (ImGui::MenuItem("Remove")) {
-                      if (_currentObject == cam.get())
+                      if (_currentObject == cam)
                         _currentObject = nullptr;
                       it = std::find(_cameras.begin(), _cameras.end(), cam);
                     }
@@ -350,14 +352,14 @@ void Scene::render(const Window &window, const std::function<void()> &f) {
             if (ImGui::CollapsingHeader("Lights",
                                         ImGuiTreeNodeFlags_DefaultOpen)) {
               if (ImGui::Button("Add light"))
-                addLight(std::make_shared<Light>(vec3{1}));
+                addLight(new Light{vec3{1}});
               auto it{_lights.end()};
               for (auto light : _lights) {
                 if (ImGui::MenuItem(light->name().c_str()))
-                  _currentObject = light.get();
+                  _currentObject = light;
                 if (ImGui::BeginPopupContextItem()) {
                   if (ImGui::MenuItem("Remove")) {
-                    if (_currentObject == light.get())
+                    if (_currentObject == light)
                       _currentObject = nullptr;
                     it = std::find(_lights.begin(), _lights.end(), light);
                   }
@@ -471,30 +473,25 @@ void Scene::render(const Window &window, const std::function<void()> &f) {
 
     // DEBUG CONTROLS
     float lspd{_dt * 25.0f}, aspd{_dt * 150.0f};
-    if (window.keyIsPressed(GLFW_KEY_ESCAPE))
-      _cameras[0]->setPosition({});
-    if (window.keyIsPressed('W'))
-      _cameras[0]->translate(_cameras[0]->transform() * vec4{0, 0, -lspd, 0});
-    if (window.keyIsPressed('A'))
-      _cameras[0]->translate(_cameras[0]->transform() * vec4{-lspd, 0, 0, 0});
-    if (window.keyIsPressed('S'))
-      _cameras[0]->translate(_cameras[0]->transform() * vec4{0, 0, lspd, 0});
-    if (window.keyIsPressed('D'))
-      _cameras[0]->translate(_cameras[0]->transform() * vec4{lspd, 0, 0, 0});
-    if (window.keyIsPressed(GLFW_KEY_SPACE))
-      _cameras[0]->translate({0, lspd, 0});
-    if (window.keyIsPressed(GLFW_KEY_LEFT_CONTROL))
-      _cameras[0]->translate({0, -lspd, 0});
+    vec3 displacement{};
+    if (window.keyIsPressed(GLFW_KEY_ESCAPE)) _cameras[0]->setPosition({});
+    if (window.keyIsPressed('W')) displacement += vec3{_cameras[0]->transform() * vec4{0, 0, -1, 0}};
+    if (window.keyIsPressed('A')) displacement += vec3{_cameras[0]->transform() * vec4{-1, 0, 0, 0}};
+    if (window.keyIsPressed('S')) displacement += vec3{_cameras[0]->transform() * vec4{0, 0, 1, 0}};
+    if (window.keyIsPressed('D')) displacement += vec3{_cameras[0]->transform() * vec4{1, 0, 0, 0}};
+    if (window.keyIsPressed(GLFW_KEY_SPACE)) displacement += vec3{0, 1, 0};
+    if (window.keyIsPressed(GLFW_KEY_LEFT_CONTROL)) displacement += vec3{0, -1, 0};
+    if (dot(displacement, displacement) > std::numeric_limits<float>::epsilon())
+      displacement = normalize(displacement) * lspd;
+    _cameras[0]->translate(displacement);
     if (window.keyIsPressed('Q'))
       _cameras[0]->rotate({0, glm::radians(-aspd), 0});
     if (window.keyIsPressed('E'))
       _cameras[0]->rotate({0, glm::radians(aspd), 0});
     if (window.keyIsPressed('R'))
-      _cameras[0]->rotate(_cameras[0]->transform() *
-                          vec4{glm::radians(-aspd), 0, 0, 0});
+      _cameras[0]->rotate(_cameras[0]->transform() * vec4{glm::radians(-aspd), 0, 0, 0});
     if (window.keyIsPressed('F'))
-      _cameras[0]->rotate(_cameras[0]->transform() *
-                          vec4{glm::radians(aspd), 0, 0, 0});
+      _cameras[0]->rotate(_cameras[0]->transform() * vec4{glm::radians(aspd), 0, 0, 0});
     if (window.keyIsPressed('Z'))
       _cameras[0]->setFov(fmaxf(_cameras[0]->fov() - 1.0f, 0.1));
     if (window.keyIsPressed('C'))
@@ -550,24 +547,32 @@ void Scene::render(const Window &window, const std::function<void()> &f) {
       glCheck(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[i + 3 * objAmt]));
 
       if (auto actor{dynamic_cast<Actor *>(obj)}) {
+        auto currentActorIsSelected{dynamic_cast<Actor *>(_currentObject) == actor};
+
         // uniforms
-        glCheck(
-            glUniformMatrix4fv(mLoc, 1, GL_FALSE, &actor->transform()[0].x));
+        glCheck(glUniformMatrix4fv(mLoc, 1, GL_FALSE, &actor->transform()[0].x));
         glCheck(glUniform3fv(materialKaLoc, 1, &actor->material.Ka.x));
         glCheck(glUniform3fv(materialKdLoc, 1, &actor->material.Kd.x));
         glCheck(glUniform3fv(materialKsLoc, 1, &actor->material.Ks.x));
         glCheck(glUniform1f(materialNsLoc, actor->material.Ns));
         glCheck(glUniform1f(materialNiLoc, actor->material.Ni));
         glCheck(glUniform1f(materialDLoc, actor->material.d));
-        glUniform1i(selectedLoc,
-                    GLint(dynamic_cast<Actor *>(_currentObject) == actor));
-        glCheck(
-            glUniform1i(texturedLoc, GLint(!actor->material.map_Kd.empty())));
+        glUniform1i(selectedLoc, 0);
+        glCheck(glUniform1i(texturedLoc, GLint(!actor->material.map_Kd.empty())));
 
         // drawing elements
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         glCheck(glDrawElements(GL_TRIANGLES,
                                3 * GLsizei(actor->mesh->triangles().size()),
                                GL_UNSIGNED_INT, nullptr));
+
+        if (currentActorIsSelected) {
+          glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+          glUniform1i(selectedLoc, 1);
+          glDrawElements(GL_TRIANGLES,
+                         3 * GLsizei(actor->mesh->triangles().size()),
+                         GL_UNSIGNED_INT, nullptr);
+        }
 
         auto prevActorAmount{_actors.size()};
 

@@ -14,6 +14,8 @@ uniform mat4 M;
 uniform mat4 V;
 uniform mat4 P;
 
+uniform bool selected;
+
 out vec3 v_p;
 out vec3 v_n;
 out vec2 v_uv;
@@ -22,6 +24,8 @@ void main(void) {
   mat4 MV = V * M;
   v_p = vec3(MV * vec4(p, 1));
   v_n = transpose(inverse(mat3(MV))) * n;
+  if (selected)
+    v_p += 0.001 * v_n;
   v_uv = uv;
   gl_Position = P * vec4(v_p, 1);
 }
@@ -70,6 +74,10 @@ bool fragmentIsNearEdge(void) {
 }
 
 void main(void) {
+  if (selected) {
+    fragColor = vec4(1, 0, 0, 1);
+    return;
+  }
   if (wireframe) {
     fragColor = vec4(0, 0.5, 1, 1);
     if (selected)
@@ -152,6 +160,11 @@ in vec2 v_uv;
 out vec4 fragColor;
 
 void main(void) {
+  if (selected) {
+    fragColor = vec4(1, 0, 0, 1);
+    return;
+  }
+
   if (wireframe) {
     fragColor = vec4(0, 0.5, 1, 1);
     if (selected)

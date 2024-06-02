@@ -33,6 +33,10 @@ void Actor::scale(vec3 xyz) {
   _boundingBox.b = (((_boundingBox.b - center) * abs(xyz)) + center);
 }
 
+void Actor::scale(float s) {
+  scale({s, s, s});
+}
+
 void Actor::setPosition(vec3 xyz) {
   _boundingBox.a += xyz - position();
   _boundingBox.b += xyz - position();

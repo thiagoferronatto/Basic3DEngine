@@ -114,6 +114,10 @@ void TransformableObject::scale(vec3 xyz) {
   //    transChild->scale(xyz);
 }
 
+void TransformableObject::scale(float s) {
+  scale({s, s, s});
+}
+
 vec3 TransformableObject::position() const { return _transform[3]; }
 
 void TransformableObject::setPosition(vec3 xyz) { _transform[3] = {xyz, 1}; }

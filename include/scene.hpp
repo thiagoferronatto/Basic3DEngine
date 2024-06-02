@@ -16,14 +16,13 @@
 class Scene {
 public:
   void addActor(Actor *actor);
-  void addCamera(std::shared_ptr<Camera> camera);
-  void addLight(std::shared_ptr<Light> light);
+  void addCamera(Camera* camera);
+  void addLight(Light* light);
 
-  void render(
-      const Window &window, const std::function<void()> &f = [] {});
+  void render(const Window &window, const std::function<void()>& f = [] {});
 
-  const std::vector<Actor *> &actors() const;
-  const std::vector<std::shared_ptr<Light>> &lights() const;
+  const std::vector<Actor*>& actors() const;
+  const std::vector<Light*>& lights() const;
 
   struct Options {
     bool toneMap{}, wireframe{}, desaturate{};
@@ -34,11 +33,11 @@ public:
   float dt() const { return _dt; }
 
 private:
-  void _addChildren(std::shared_ptr<Object> object);
+  void _addChildren(Object* object);
 
-  std::vector<std::shared_ptr<Camera>> _cameras;
-  std::vector<Actor *> _actors;
-  std::vector<std::shared_ptr<Light>> _lights;
+  std::vector<Camera*> _cameras;
+  std::vector<Actor*> _actors;
+  std::vector<Light*> _lights;
   TransformableObject *_currentObject;
   float _dt{};
 };

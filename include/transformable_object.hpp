@@ -19,6 +19,7 @@ public:
   virtual void rotate(vec3 euler);
   virtual void rotate(float angle, vec3 axis);
   virtual void scale(vec3 xyz);
+  virtual void scale(float s);
 
   virtual vec3 position() const;
   virtual void setPosition(vec3 xyz);

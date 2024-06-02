@@ -42,6 +42,7 @@ Window::Window(size_t width, size_t height, const char *title)
     io.Fonts->Build();
     io.FontDefault = segoeUi;
   }
+  glEnable(GL_FRAMEBUFFER_SRGB);
 }
 
 Window::~Window() {

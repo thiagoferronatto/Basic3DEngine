@@ -16,6 +16,7 @@ public:
   void translate(vec3 xyz) override;
   void rotate(vec3 euler) override;
   void scale(vec3 xyz) override;
+  void scale(float s) override;
 
   void setPosition(vec3 xyz) override;
   void setRotation(vec3 euler) override;
