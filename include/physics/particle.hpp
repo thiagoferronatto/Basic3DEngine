@@ -17,8 +17,9 @@ class Particle {
   }
 
   void SetInverseMass(Float inverse_mass) {
-    assert(inverse_mass > 0);
-    mass_ = 1 / (inverse_mass_ = inverse_mass);
+    assert(inverse_mass >= 0);
+    inverse_mass_ = inverse_mass;
+    mass_ = (1 - (inverse_mass_ == 0)) / inverse_mass_;
   }
 
   void SetPosition(const Vector3& position) { position_ = position; }
@@ -34,6 +35,8 @@ class Particle {
   const Vector3& GetVelocity() const { return velocity_; }
 
   Float GetSpeed() const { return glm::length(velocity_); }
+
+  Vector3 GetForces() const { return accumulated_force_; }
 
   bool HasFiniteMass() const { return inverse_mass_ > 0; }
 
@@ -56,7 +59,7 @@ class Particle {
   Vector3 accumulated_force_{};
   Float inverse_mass_{1};
   Float mass_{1};
-  Float damping_{0.9};
+  Float damping_{0.8};
 };
 
 }  // namespace phys

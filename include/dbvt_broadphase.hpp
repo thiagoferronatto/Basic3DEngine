@@ -25,14 +25,14 @@ struct DbvtBroadphase {
   }
 
   void collide() {
-    collideTT(tree, tree, BvtCollider{scene.dt()});
+    collideTT(tree, tree, BvtCollider{scene.timeStep()});
     int i{};
     // TODO: make broadphase scene-independent
     for (auto &actor : scene.actors()) {
       // TODO: find a way to move this physics stuff into simulatePhysicsStep()
       static constexpr vec3 gravity{0, -0.0005, 0};
       if (actor->_inverseMass > 0)
-        actor->_velocity += gravity * scene.dt();
+        actor->_velocity += gravity * scene.timeStep();
       actor->translate(actor->_velocity);
       actor->rotate(actor->_angularVelocity);
 

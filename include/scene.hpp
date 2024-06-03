@@ -31,7 +31,7 @@ class Scene {
 
   vec3 ambient{};
 
-  float dt() const { return _dt; }
+  float timeStep() const { return _timeStep; }
 
  private:
   void _addChildren(Object* object);
@@ -40,7 +40,7 @@ class Scene {
   std::vector<Actor*> _actors;
   std::vector<Light*> _lights;
   TransformableObject* _currentObject;
-  float _dt{};
+  float _timeStep{};
 };
 
 #endif  // SCENE_HPP

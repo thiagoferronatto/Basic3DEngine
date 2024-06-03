@@ -235,7 +235,7 @@ void Scene::render(const Window &window, const std::function<void()> &f) {
 
   // fragment shader
   auto fsLoc{glCreateShader(GL_FRAGMENT_SHADER)};
-  glCheck(glShaderSource(fsLoc, 1, &triangleMeshPbrtFragShader, nullptr));
+  glCheck(glShaderSource(fsLoc, 1, &triangleMeshPhongFragShader, nullptr));
   glCheck(glCompileShader(fsLoc));
   glCheckShaderCompilation(fsLoc);
 
@@ -293,7 +293,7 @@ void Scene::render(const Window &window, const std::function<void()> &f) {
     ImGui::SetNextWindowPos({21, 21});
     ImGui::SetNextWindowSize({100, 75});
     if (ImGui::Begin("Performance")) {
-      ImGui::Text("%.2f fps", 1.0f / _dt);
+      ImGui::Text("%.2f fps", 1.0f / _timeStep);
       ImGui::Text("%.2f s", elapsedTime);
       ImGui::End();
     }
@@ -464,7 +464,7 @@ void Scene::render(const Window &window, const std::function<void()> &f) {
     glCheck(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
     // DEBUG CONTROLS
-    float lspd{_dt * 25.0f}, aspd{_dt * 150.0f};
+    float lspd{_timeStep * 25.0f}, aspd{_timeStep * 150.0f};
     vec3 displacement{};
     if (window.keyIsPressed(GLFW_KEY_ESCAPE)) _cameras[0]->setPosition({});
     if (window.keyIsPressed('W'))
@@ -478,7 +478,7 @@ void Scene::render(const Window &window, const std::function<void()> &f) {
     if (window.keyIsPressed(GLFW_KEY_SPACE)) displacement += vec3{0, 1, 0};
     if (window.keyIsPressed(GLFW_KEY_LEFT_CONTROL))
       displacement += vec3{0, -1, 0};
-    if (dot(displacement, displacement) > std::numeric_limits<float>::epsilon())
+    if (dot(displacement, displacement) > 0)
       displacement = normalize(displacement) * lspd;
     _cameras[0]->translate(displacement);
     if (window.keyIsPressed('Q'))
@@ -492,9 +492,9 @@ void Scene::render(const Window &window, const std::function<void()> &f) {
       _cameras[0]->rotate(_cameras[0]->transform() *
                           vec4{glm::radians(aspd), 0, 0, 0});
     if (window.keyIsPressed('Z'))
-      _cameras[0]->setFov(fmaxf(_cameras[0]->fov() - 1.0f, 0.1));
+      _cameras[0]->setFov(fmaxf(_cameras[0]->fov() - 100.0f * _timeStep, 0.1));
     if (window.keyIsPressed('C'))
-      _cameras[0]->setFov(fminf(_cameras[0]->fov() + 1.0f, 179));
+      _cameras[0]->setFov(fminf(_cameras[0]->fov() + 100.0f * _timeStep, 179));
     if (window.keyIsPressed('U')) {
       if (!uWasPressedInPrevFrame) drawUserInterface = !drawUserInterface;
       uWasPressedInPrevFrame = true;
@@ -599,8 +599,8 @@ void Scene::render(const Window &window, const std::function<void()> &f) {
     window.pollEvents();
 
     auto end = steady_clock::now();
-    _dt = 1e-6f * duration_cast<microseconds>(end - start).count();
-    elapsedTime += _dt;
+    _timeStep = 1e-6f * duration_cast<microseconds>(end - start).count();
+    elapsedTime += _timeStep;
   }
 
   glCheck(glDeleteShader(vsLoc));     // vs in vram, freeing ram

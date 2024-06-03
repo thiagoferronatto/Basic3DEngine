@@ -100,8 +100,14 @@ void main(void) {
     float diffuse = 0.5 * dot(l, n) + 0.5;
     diffuse *= diffuse;
 
-    vec3 r = normalize(2.0 * dot(n, l) * n - l);
-    float specular = pow(max(dot(v, r), 0.0), material.Ns);
+    float specular = 0.0;
+    if (material.Ns != 0.0) {
+      vec3 h = normalize(v + l);
+      specular = pow(max(dot(h, n), 0.0), material.Ns);
+
+      // vec3 r = normalize(2.0 * dot(n, l) * n - l);
+      // specular = pow(max(dot(v, r), 0.0), material.Ns);
+    }
 
     vec3 t = vec3(1);
     if (textured)

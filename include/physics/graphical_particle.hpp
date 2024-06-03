@@ -12,6 +12,7 @@ class GraphicalParticle : public Actor {
     _name = std::string{"particle_"} + std::to_string(current_particle_id_++);
     // Make particles show up as red spheres
     material.Kd = {1, 0, 0};
+    material.Ns = 0;
     this->scale(0.1);
   }
 
