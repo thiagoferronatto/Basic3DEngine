@@ -9,7 +9,7 @@ class Particle {
  public:
   Particle() = default;
 
-  explicit Particle(Float mass) : mass_{mass} {}
+  explicit Particle(Float mass) { SetMass(mass); }
 
   void SetMass(Float mass) {
     assert(mass > 0);
@@ -33,12 +33,16 @@ class Particle {
 
   const Vector3& GetVelocity() const { return velocity_; }
 
-  void Integrate(Float dt) {
-    assert(dt >= 0);
-    position_ += velocity_ * dt;
+  Float GetSpeed() const { return glm::length(velocity_); }
+
+  bool HasFiniteMass() const { return inverse_mass_ > 0; }
+
+  void Integrate(Float time_step) {
+    assert(time_step >= 0);
+    position_ += velocity_ * time_step;
     acceleration_ = accumulated_force_ * inverse_mass_;
-    velocity_ += acceleration_ * dt;
-    velocity_ *= std::pow(damping_, dt);
+    velocity_ += acceleration_ * time_step;
+    velocity_ *= std::pow(damping_, time_step);
   }
 
   void ApplyForce(const Vector3& force) { accumulated_force_ += force; }

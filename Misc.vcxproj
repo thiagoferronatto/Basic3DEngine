@@ -163,9 +163,10 @@
     <ClInclude Include="include\material.hpp" />
     <ClInclude Include="include\object.hpp" />
     <ClInclude Include="include\physics\common.hpp" />
-    <ClInclude Include="include\physics\force_generator.hpp" />
+    <ClInclude Include="include\physics\particle_force_generator.hpp" />
     <ClInclude Include="include\physics\graphical_particle.hpp" />
     <ClInclude Include="include\physics\particle.hpp" />
+    <ClInclude Include="include\physics\particle_force_registry.hpp" />
     <ClInclude Include="include\ppm.hpp" />
     <ClInclude Include="include\rigid_body.hpp" />
     <ClInclude Include="include\scene.hpp" />
