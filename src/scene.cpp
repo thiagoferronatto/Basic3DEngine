@@ -14,7 +14,8 @@
 #include "imgui/imgui_impl_opengl3.h"
 // clang-format on
 
-static bool drawUserInterface = false;
+static inline bool drawUserInterface = false;
+static inline float elapsedTime = 0;
 
 void Scene::addCamera(Camera *camera) {
   _cameras.push_back(camera);
@@ -293,6 +294,7 @@ void Scene::render(const Window &window, const std::function<void()> &f) {
     ImGui::SetNextWindowSize({100, 75});
     if (ImGui::Begin("Performance")) {
       ImGui::Text("%.2f fps", 1.0f / _dt);
+      ImGui::Text("%.2f s", elapsedTime);
       ImGui::End();
     }
 
@@ -598,6 +600,7 @@ void Scene::render(const Window &window, const std::function<void()> &f) {
 
     auto end = steady_clock::now();
     _dt = 1e-6f * duration_cast<microseconds>(end - start).count();
+    elapsedTime += _dt;
   }
 
   glCheck(glDeleteShader(vsLoc));     // vs in vram, freeing ram
