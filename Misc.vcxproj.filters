@@ -114,6 +114,9 @@
     <ClInclude Include="include\camera.hpp">
       <Filter>Header Files\Core</Filter>
     </ClInclude>
+    <ClInclude Include="include\physics\common.hpp">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
     <ClInclude Include="include\custom_assert.hpp">
       <Filter>Header Files\Core</Filter>
     </ClInclude>
@@ -130,6 +133,9 @@
       <Filter>Header Files\Core</Filter>
     </ClInclude>
     <ClInclude Include="include\object.hpp">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\physics\particle.hpp">
       <Filter>Header Files\Core</Filter>
     </ClInclude>
     <ClInclude Include="include\ppm.hpp">
@@ -157,12 +163,6 @@
       <Filter>Header Files\Physics</Filter>
     </ClInclude>
     <ClInclude Include="include\physics\particle_force_registry.hpp">
-      <Filter>Header Files\Physics</Filter>
-    </ClInclude>
-    <ClInclude Include="include\physics\particle.hpp">
-      <Filter>Header Files\Physics</Filter>
-    </ClInclude>
-    <ClInclude Include="include\physics\common.hpp">
       <Filter>Header Files\Physics</Filter>
     </ClInclude>
   </ItemGroup>
