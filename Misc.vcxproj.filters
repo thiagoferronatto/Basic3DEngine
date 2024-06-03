@@ -31,80 +31,41 @@
     <Filter Include="Header Files\Collision\Response">
       <UniqueIdentifier>{b5c2b209-4956-4708-ad95-241777c53d7c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Externals">
+    <Filter Include="Header Files\Senior thesis">
+      <UniqueIdentifier>{fda3b7a5-73fb-488a-a540-45e5b23e1a3d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Senior thesis\Externals">
       <UniqueIdentifier>{e2bf5cdd-7fad-49ab-be2b-e707ea86373b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Externals\Pagliosa">
+    <Filter Include="Header Files\Senior thesis\Externals\Pagliosa">
       <UniqueIdentifier>{13f79ecf-0d0a-41da-8ada-727a0cb73487}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Externals\Devillers">
+    <Filter Include="Header Files\Senior thesis\Externals\Devillers">
       <UniqueIdentifier>{779fbf76-9c1f-461e-aee5-1cd4450f6c91}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Externals">
+    <Filter Include="Header Files\Core">
+      <UniqueIdentifier>{ee78330c-250c-4958-9d56-3e9b49eed689}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Physics">
+      <UniqueIdentifier>{911bf0a4-aa3e-4c42-a395-bab8f97a2acf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Core">
+      <UniqueIdentifier>{f929f877-204e-4154-b4d9-5c891d4c1d5c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Senior thesis">
+      <UniqueIdentifier>{aa67e129-79ae-4198-a6da-ca8155baa1f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Senior thesis\Externals">
       <UniqueIdentifier>{15f08a97-71ea-43d6-9eec-ee83f200c15f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Externals\Devillers">
+    <Filter Include="Source Files\Senior thesis\Externals\Devillers">
       <UniqueIdentifier>{5703d861-8c24-46d7-9709-adfae92c54ab}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Externals\Pagliosa">
+    <Filter Include="Source Files\Senior thesis\Externals\Pagliosa">
       <UniqueIdentifier>{3cb44f82-d8be-4bb8-bbf7-c90026222e1c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\custom_assert.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\window.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\camera.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\scene.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\object.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\shader_sources.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\triangle_mesh.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\gl_util.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\actor.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\transformable_object.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\material.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\light.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\log.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\ppm.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\aabb.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\boundable.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\rigid_body.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\dbvh.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\dbvt_broadphase.hpp">
       <Filter>Header Files\Collision\Detection</Filter>
     </ClInclude>
@@ -121,47 +82,92 @@
       <Filter>Header Files\Collision\Detection</Filter>
     </ClInclude>
     <ClInclude Include="include\TriangleMeshBVH.h">
-      <Filter>Header Files\Externals\Pagliosa</Filter>
+      <Filter>Header Files\Senior thesis\Externals\Pagliosa</Filter>
     </ClInclude>
     <ClInclude Include="include\BVH.h">
-      <Filter>Header Files\Externals\Pagliosa</Filter>
+      <Filter>Header Files\Senior thesis\Externals\Pagliosa</Filter>
     </ClInclude>
     <ClInclude Include="dependencies\DynamicTree.h">
-      <Filter>Header Files\Externals\Pagliosa</Filter>
+      <Filter>Header Files\Senior thesis\Externals\Pagliosa</Filter>
     </ClInclude>
     <ClInclude Include="include\triangle_intersection.hpp">
-      <Filter>Header Files\Externals\Devillers</Filter>
+      <Filter>Header Files\Senior thesis\Externals\Devillers</Filter>
     </ClInclude>
     <ClInclude Include="include\SharedObject.h">
-      <Filter>Header Files\Externals\Pagliosa</Filter>
+      <Filter>Header Files\Senior thesis\Externals\Pagliosa</Filter>
+    </ClInclude>
+    <ClInclude Include="include\aabb.hpp">
+      <Filter>Header Files\Senior thesis</Filter>
+    </ClInclude>
+    <ClInclude Include="include\boundable.hpp">
+      <Filter>Header Files\Senior thesis</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dbvh.hpp">
+      <Filter>Header Files\Senior thesis\Externals\Pagliosa</Filter>
+    </ClInclude>
+    <ClInclude Include="include\rigid_body.hpp">
+      <Filter>Header Files\Senior thesis</Filter>
+    </ClInclude>
+    <ClInclude Include="include\actor.hpp">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\camera.hpp">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\physics\common.hpp">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\custom_assert.hpp">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gl_util.hpp">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\light.hpp">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\log.hpp">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\material.hpp">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\object.hpp">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\physics\particle.hpp">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ppm.hpp">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scene.hpp">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\shader_sources.hpp">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\transformable_object.hpp">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\triangle_mesh.hpp">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\window.hpp">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\physics\graphical_particle.hpp">
+      <Filter>Header Files\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\physics\particle_force_generator.hpp">
+      <Filter>Header Files\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\physics\particle_force_registry.hpp">
+      <Filter>Header Files\Physics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\object.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\transformable_object.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\camera.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\triangle_mesh.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\scene.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\window.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\actor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\light.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="dependencies\imgui\imgui.cpp">
@@ -188,23 +194,47 @@
     <ClCompile Include="dependencies\glad\src\glad.c">
       <Filter>Dependencies</Filter>
     </ClCompile>
-    <ClCompile Include="src\ppm.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\boundable.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\rigid_body.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\triangle_intersection.cpp">
-      <Filter>Source Files\Externals\Devillers</Filter>
+      <Filter>Source Files\Senior thesis\Externals\Devillers</Filter>
     </ClCompile>
     <ClCompile Include="src\TriangleMeshBVH.cpp">
-      <Filter>Source Files\Externals\Pagliosa</Filter>
+      <Filter>Source Files\Senior thesis\Externals\Pagliosa</Filter>
     </ClCompile>
     <ClCompile Include="src\BVH.cpp">
-      <Filter>Source Files\Externals\Pagliosa</Filter>
+      <Filter>Source Files\Senior thesis\Externals\Pagliosa</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rigid_body.cpp">
+      <Filter>Source Files\Senior thesis</Filter>
+    </ClCompile>
+    <ClCompile Include="src\boundable.cpp">
+      <Filter>Source Files\Senior thesis</Filter>
+    </ClCompile>
+    <ClCompile Include="src\actor.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\camera.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\light.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\object.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ppm.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\scene.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\transformable_object.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\triangle_mesh.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\window.cpp">
+      <Filter>Source Files\Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
