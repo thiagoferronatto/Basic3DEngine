@@ -28,7 +28,7 @@ int main() {
 
   for (auto& particle : particles) {
     registry.Register(&particle, &grav_gen);
-    registry.Register(&particle, &drag_gen);
+    // registry.Register(&particle, &drag_gen);
   }
 
   auto cam = new Camera{"cam", glm::radians(74.0f), 16 / 9.0f, 0.01f, 1000.0f};
@@ -43,6 +43,7 @@ int main() {
     scene.addActor(graphical_particle);
 
   scene.render(window, [&] {
+    // Separate physics simulation
     float dt = scene.dt();
     registry.ApplyForces(dt);
     for (auto& particle : particles) {
@@ -50,6 +51,7 @@ int main() {
       particle.ClearForceAccumulator();
     }
 
+    // Graphics are decoupled from the physics by default
     for (auto& graphical_particle : graphical_particles) {
       graphical_particle->Update();
     }
