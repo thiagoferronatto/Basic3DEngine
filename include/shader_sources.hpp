@@ -25,7 +25,7 @@ void main(void) {
   v_p = vec3(MV * vec4(p, 1));
   v_n = transpose(inverse(mat3(MV))) * n;
   if (selected)
-    v_p += 0.001 * v_n;
+    v_p += 0.00001 * v_n;
   v_uv = uv;
   gl_Position = P * vec4(v_p, 1);
 }
@@ -249,4 +249,4 @@ void main(void) {
 
 )";
 
-#endif // SHADER_SOURCES_HPP
+#endif  // SHADER_SOURCES_HPP

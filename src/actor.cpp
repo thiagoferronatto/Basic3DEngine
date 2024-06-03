@@ -33,9 +33,7 @@ void Actor::scale(vec3 xyz) {
   _boundingBox.b = (((_boundingBox.b - center) * abs(xyz)) + center);
 }
 
-void Actor::scale(float s) {
-  scale({s, s, s});
-}
+void Actor::scale(float s) { scale({s, s, s}); }
 
 void Actor::setPosition(vec3 xyz) {
   _boundingBox.a += xyz - position();
@@ -54,8 +52,7 @@ void Actor::setScale(vec3 xyz) {
 }
 
 Actor &Actor::operator=(const Actor &other) {
-  if (&other == this)
-    goto skip;
+  if (&other == this) goto skip;
   this->TransformableObject::operator=(other);
   material = other.material;
 skip:
@@ -63,8 +60,7 @@ skip:
 }
 
 Actor &Actor::operator=(Actor &&other) noexcept {
-  if (&other == this)
-    goto skip;
+  if (&other == this) goto skip;
   this->TransformableObject::operator=(std::move(other));
   material = std::move(other.material);
 skip:

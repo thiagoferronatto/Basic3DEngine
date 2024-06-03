@@ -12,7 +12,8 @@ using namespace glm;
 
 /// @brief General triangle structure. Holds arbitrary vertex data.
 /// @tparam Vertex data type.
-template <typename T> struct Triangle {
+template <typename T>
+struct Triangle {
   T v1, v2, v3;
 };
 
@@ -34,7 +35,7 @@ struct TriangleMeshData {
 };
 
 class TriangleMesh : public cg::SharedObject {
-public:
+ public:
   TriangleMesh(TriangleMeshData &&data);
   TriangleMesh(const TriangleMesh &other) = delete;
   TriangleMesh(TriangleMesh &&other) noexcept;
@@ -49,10 +50,10 @@ public:
 
   const auto &data() const { return _data; }
 
-private:
+ private:
   inline static size_t _cubes{}, _planes{}, _customMeshes{};
 
   TriangleMeshData _data;
 };
 
-#endif // TRIANGLE_MESH_HPP
+#endif  // TRIANGLE_MESH_HPP

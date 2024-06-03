@@ -7,7 +7,7 @@
 #include "triangle_mesh.hpp"
 
 class Actor : public TransformableObject, public RigidBody {
-public:
+ public:
   Actor(std::string name, const TriangleMesh *mesh);
   Actor(std::string name, Material m);
   Actor(const Actor &other);
@@ -29,7 +29,7 @@ public:
   void initializeRigidBody(float mass) override;
 
   Material material{};
-  cg::Reference<TriangleMesh> mesh;
+  const TriangleMesh *mesh;
 };
 
-#endif // ACTOR_HPP
+#endif  // ACTOR_HPP

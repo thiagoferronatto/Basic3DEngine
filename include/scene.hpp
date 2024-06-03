@@ -14,12 +14,13 @@
 #include "window.hpp"
 
 class Scene {
-public:
-  void addActor(Actor *actor);
+ public:
+  void addActor(Actor* actor);
   void addCamera(Camera* camera);
   void addLight(Light* light);
 
-  void render(const Window &window, const std::function<void()>& f = [] {});
+  void render(
+      const Window& window, const std::function<void()>& f = [] {});
 
   const std::vector<Actor*>& actors() const;
   const std::vector<Light*>& lights() const;
@@ -32,14 +33,14 @@ public:
 
   float dt() const { return _dt; }
 
-private:
+ private:
   void _addChildren(Object* object);
 
   std::vector<Camera*> _cameras;
   std::vector<Actor*> _actors;
   std::vector<Light*> _lights;
-  TransformableObject *_currentObject;
+  TransformableObject* _currentObject;
   float _dt{};
 };
 
-#endif // SCENE_HPP
+#endif  // SCENE_HPP

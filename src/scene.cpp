@@ -16,25 +16,23 @@
 
 static bool drawUserInterface = false;
 
-void Scene::addCamera(Camera* camera) {
+void Scene::addCamera(Camera *camera) {
   _cameras.push_back(camera);
   _addChildren(camera);
 }
 
-void Scene::addLight(Light* light) {
+void Scene::addLight(Light *light) {
   _lights.push_back(light);
   _addChildren(light);
 }
 
-const std::vector<Actor *>& Scene::actors() const { return _actors; }
+const std::vector<Actor *> &Scene::actors() const { return _actors; }
 
-const std::vector<Light*>& Scene::lights() const {
-  return _lights;
-}
+const std::vector<Light *> &Scene::lights() const { return _lights; }
 
 void Scene::addActor(Actor *actor) { _actors.push_back(actor); }
 
-void Scene::_addChildren(Object* object) {
+void Scene::_addChildren(Object *object) {
   // for (auto child : object->children()) {
   //   if (auto actor{std::dynamic_pointer_cast<Actor>(child)})
   //     addActor(actor);
@@ -62,11 +60,10 @@ static void transferActors(std::shared_ptr<GLuint[]> &buffers,
         glDeleteBuffers(buffersPerObject * GLsizei(prevObjAmt), buffers.get()));
 
   buffers = std::make_shared<GLuint[]>(
-      buffersPerObject * objAmt); // new GLuint[buffersPerObject * objAmt];
+      buffersPerObject * objAmt);  // new GLuint[buffersPerObject * objAmt];
 
-  if (textures)
-    glCheck(glDeleteTextures(GLsizei(prevObjAmt), textures.get()));
-  textures = std::make_shared<GLuint[]>(objAmt); // new GLuint[objAmt];
+  if (textures) glCheck(glDeleteTextures(GLsizei(prevObjAmt), textures.get()));
+  textures = std::make_shared<GLuint[]>(objAmt);  // new GLuint[objAmt];
 
   // generating buffers for each object
   glCheck(glGenBuffers(buffersPerObject * GLsizei(objAmt), buffers.get()));
@@ -134,16 +131,16 @@ static void transferActors(std::shared_ptr<GLuint[]> &buffers,
         glCheck(
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
         glCheck(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));
-        glCheck(glTexImage2D( //
-            GL_TEXTURE_2D,    // target
-            0,                // level
-            GL_RGB,           // internalformat
-            bah.width(),      // width
-            bah.height(),     // height
-            0,                // border
-            GL_RGB,           // format
-            GL_UNSIGNED_BYTE, // type
-            bah.pixels()      // data
+        glCheck(glTexImage2D(  //
+            GL_TEXTURE_2D,     // target
+            0,                 // level
+            GL_RGB,            // internalformat
+            bah.width(),       // width
+            bah.height(),      // height
+            0,                 // border
+            GL_RGB,            // format
+            GL_UNSIGNED_BYTE,  // type
+            bah.pixels()       // data
             ));
         glCheck(glGenerateMipmap(GL_TEXTURE_2D));
       }
@@ -243,28 +240,28 @@ void Scene::render(const Window &window, const std::function<void()> &f) {
 
   // program
   auto program{glCreateProgram()};
-  glCheck(glAttachShader(program, vsLoc)); // sending vs to vram
-  glCheck(glAttachShader(program, fsLoc)); // sending fs to vram
-  glCheck(glLinkProgram(program));         // linking program
-  glCheckProgramLinkage(program);          // checking linkage status
-  glCheck(glUseProgram(program));          // sending program to vram
+  glCheck(glAttachShader(program, vsLoc));  // sending vs to vram
+  glCheck(glAttachShader(program, fsLoc));  // sending fs to vram
+  glCheck(glLinkProgram(program));          // linking program
+  glCheckProgramLinkage(program);           // checking linkage status
+  glCheck(glUseProgram(program));           // sending program to vram
 
-  auto mLoc         {glGetUniformLocation(program, "M"          )};
-  auto vLoc         {glGetUniformLocation(program, "V"          )};
-  auto pLoc         {glGetUniformLocation(program, "P"          )};
+  auto mLoc{glGetUniformLocation(program, "M")};
+  auto vLoc{glGetUniformLocation(program, "V")};
+  auto pLoc{glGetUniformLocation(program, "P")};
   auto materialKaLoc{glGetUniformLocation(program, "material.Ka")};
   auto materialKdLoc{glGetUniformLocation(program, "material.Kd")};
   auto materialKsLoc{glGetUniformLocation(program, "material.Ks")};
   auto materialNsLoc{glGetUniformLocation(program, "material.Ns")};
   auto materialNiLoc{glGetUniformLocation(program, "material.Ni")};
-  auto materialDLoc {glGetUniformLocation(program, "material.d" )};
-  auto selectedLoc  {glGetUniformLocation(program, "selected"   )};
-  auto texturedLoc  {glGetUniformLocation(program, "textured"   )};
-  auto lightCountLoc{glGetUniformLocation(program, "lightCount" )};
-  auto toneMapLoc   {glGetUniformLocation(program, "toneMap"    )};
-  auto wireframeLoc {glGetUniformLocation(program, "wireframe"  )};
-  auto desaturateLoc{glGetUniformLocation(program, "desaturate" )};
-  auto ambientLoc   {glGetUniformLocation(program, "ambient"    )};
+  auto materialDLoc{glGetUniformLocation(program, "material.d")};
+  auto selectedLoc{glGetUniformLocation(program, "selected")};
+  auto texturedLoc{glGetUniformLocation(program, "textured")};
+  auto lightCountLoc{glGetUniformLocation(program, "lightCount")};
+  auto toneMapLoc{glGetUniformLocation(program, "toneMap")};
+  auto wireframeLoc{glGetUniformLocation(program, "wireframe")};
+  auto desaturateLoc{glGetUniformLocation(program, "desaturate")};
+  auto ambientLoc{glGetUniformLocation(program, "ambient")};
   GLuint lightColorLocs[100];
   GLuint lightTransformLocs[100];
   for (int i = 0; i < 100; ++i) {
@@ -316,8 +313,7 @@ void Scene::render(const Window &window, const std::function<void()> &f) {
                   _currentObject = actor;
                 if (ImGui::BeginPopupContextItem()) {
                   if (ImGui::MenuItem("Remove")) {
-                    if (_currentObject == actor)
-                      _currentObject = nullptr;
+                    if (_currentObject == actor) _currentObject = nullptr;
                     it = std::find(_actors.begin(), _actors.end(), actor);
                     transferActors(buffers, textures, objAmt, _actors);
                   }
@@ -333,41 +329,35 @@ void Scene::render(const Window &window, const std::function<void()> &f) {
                                         ImGuiTreeNodeFlags_DefaultOpen)) {
               auto it{_cameras.end()};
               for (auto &cam : _cameras) {
-                if (ImGui::MenuItem(cam->name().c_str()))
-                  _currentObject = cam;
+                if (ImGui::MenuItem(cam->name().c_str())) _currentObject = cam;
                 if (_cameras.size() > 1) {
                   if (ImGui::BeginPopupContextItem()) {
                     if (ImGui::MenuItem("Remove")) {
-                      if (_currentObject == cam)
-                        _currentObject = nullptr;
+                      if (_currentObject == cam) _currentObject = nullptr;
                       it = std::find(_cameras.begin(), _cameras.end(), cam);
                     }
                     ImGui::EndPopup();
                   }
                 }
               }
-              if (it != _cameras.end())
-                _cameras.erase(it);
+              if (it != _cameras.end()) _cameras.erase(it);
             }
             if (ImGui::CollapsingHeader("Lights",
                                         ImGuiTreeNodeFlags_DefaultOpen)) {
-              if (ImGui::Button("Add light"))
-                addLight(new Light{vec3{1}});
+              if (ImGui::Button("Add light")) addLight(new Light{vec3{1}});
               auto it{_lights.end()};
               for (auto light : _lights) {
                 if (ImGui::MenuItem(light->name().c_str()))
                   _currentObject = light;
                 if (ImGui::BeginPopupContextItem()) {
                   if (ImGui::MenuItem("Remove")) {
-                    if (_currentObject == light)
-                      _currentObject = nullptr;
+                    if (_currentObject == light) _currentObject = nullptr;
                     it = std::find(_lights.begin(), _lights.end(), light);
                   }
                   ImGui::EndPopup();
                 }
               }
-              if (it != _lights.end())
-                _lights.erase(it);
+              if (it != _lights.end()) _lights.erase(it);
             }
             ImGui::EndTabItem();
           }
@@ -475,12 +465,17 @@ void Scene::render(const Window &window, const std::function<void()> &f) {
     float lspd{_dt * 25.0f}, aspd{_dt * 150.0f};
     vec3 displacement{};
     if (window.keyIsPressed(GLFW_KEY_ESCAPE)) _cameras[0]->setPosition({});
-    if (window.keyIsPressed('W')) displacement += vec3{_cameras[0]->transform() * vec4{0, 0, -1, 0}};
-    if (window.keyIsPressed('A')) displacement += vec3{_cameras[0]->transform() * vec4{-1, 0, 0, 0}};
-    if (window.keyIsPressed('S')) displacement += vec3{_cameras[0]->transform() * vec4{0, 0, 1, 0}};
-    if (window.keyIsPressed('D')) displacement += vec3{_cameras[0]->transform() * vec4{1, 0, 0, 0}};
+    if (window.keyIsPressed('W'))
+      displacement += vec3{_cameras[0]->transform() * vec4{0, 0, -1, 0}};
+    if (window.keyIsPressed('A'))
+      displacement += vec3{_cameras[0]->transform() * vec4{-1, 0, 0, 0}};
+    if (window.keyIsPressed('S'))
+      displacement += vec3{_cameras[0]->transform() * vec4{0, 0, 1, 0}};
+    if (window.keyIsPressed('D'))
+      displacement += vec3{_cameras[0]->transform() * vec4{1, 0, 0, 0}};
     if (window.keyIsPressed(GLFW_KEY_SPACE)) displacement += vec3{0, 1, 0};
-    if (window.keyIsPressed(GLFW_KEY_LEFT_CONTROL)) displacement += vec3{0, -1, 0};
+    if (window.keyIsPressed(GLFW_KEY_LEFT_CONTROL))
+      displacement += vec3{0, -1, 0};
     if (dot(displacement, displacement) > std::numeric_limits<float>::epsilon())
       displacement = normalize(displacement) * lspd;
     _cameras[0]->translate(displacement);
@@ -489,16 +484,17 @@ void Scene::render(const Window &window, const std::function<void()> &f) {
     if (window.keyIsPressed('E'))
       _cameras[0]->rotate({0, glm::radians(aspd), 0});
     if (window.keyIsPressed('R'))
-      _cameras[0]->rotate(_cameras[0]->transform() * vec4{glm::radians(-aspd), 0, 0, 0});
+      _cameras[0]->rotate(_cameras[0]->transform() *
+                          vec4{glm::radians(-aspd), 0, 0, 0});
     if (window.keyIsPressed('F'))
-      _cameras[0]->rotate(_cameras[0]->transform() * vec4{glm::radians(aspd), 0, 0, 0});
+      _cameras[0]->rotate(_cameras[0]->transform() *
+                          vec4{glm::radians(aspd), 0, 0, 0});
     if (window.keyIsPressed('Z'))
       _cameras[0]->setFov(fmaxf(_cameras[0]->fov() - 1.0f, 0.1));
     if (window.keyIsPressed('C'))
       _cameras[0]->setFov(fminf(_cameras[0]->fov() + 1.0f, 179));
     if (window.keyIsPressed('U')) {
-      if (!uWasPressedInPrevFrame)
-        drawUserInterface = !drawUserInterface;
+      if (!uWasPressedInPrevFrame) drawUserInterface = !drawUserInterface;
       uWasPressedInPrevFrame = true;
     } else {
       uWasPressedInPrevFrame = false;
@@ -547,10 +543,12 @@ void Scene::render(const Window &window, const std::function<void()> &f) {
       glCheck(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[i + 3 * objAmt]));
 
       if (auto actor{dynamic_cast<Actor *>(obj)}) {
-        auto currentActorIsSelected{dynamic_cast<Actor *>(_currentObject) == actor};
+        auto currentActorIsSelected{dynamic_cast<Actor *>(_currentObject) ==
+                                    actor};
 
         // uniforms
-        glCheck(glUniformMatrix4fv(mLoc, 1, GL_FALSE, &actor->transform()[0].x));
+        glCheck(
+            glUniformMatrix4fv(mLoc, 1, GL_FALSE, &actor->transform()[0].x));
         glCheck(glUniform3fv(materialKaLoc, 1, &actor->material.Ka.x));
         glCheck(glUniform3fv(materialKdLoc, 1, &actor->material.Kd.x));
         glCheck(glUniform3fv(materialKsLoc, 1, &actor->material.Ks.x));
@@ -558,7 +556,8 @@ void Scene::render(const Window &window, const std::function<void()> &f) {
         glCheck(glUniform1f(materialNiLoc, actor->material.Ni));
         glCheck(glUniform1f(materialDLoc, actor->material.d));
         glUniform1i(selectedLoc, 0);
-        glCheck(glUniform1i(texturedLoc, GLint(!actor->material.map_Kd.empty())));
+        glCheck(
+            glUniform1i(texturedLoc, GLint(!actor->material.map_Kd.empty())));
 
         // drawing elements
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL - options.wireframe);
@@ -573,22 +572,22 @@ void Scene::render(const Window &window, const std::function<void()> &f) {
                          3 * GLsizei(actor->mesh->triangles().size()),
                          GL_UNSIGNED_INT, nullptr);
         }
-
-        auto prevActorAmount{_actors.size()};
-
-        // calling custom loop function after drawing
-        f();
-
-        // just in case the user dynamically adds more actors within f()
-        if (_actors.size() != prevActorAmount)
-          transferActors(buffers, textures, prevActorAmount, _actors);
-
       } else {
-        logMsg("[WARNING] Attempted to draw unsupported shape, ignoring "
-               "request\n");
+        logMsg(
+            "[WARNING] Attempted to draw unsupported shape, ignoring "
+            "request\n");
       }
       ++i;
     }
+
+    auto prevActorAmount{_actors.size()};
+
+    // calling custom loop function after drawing
+    f();
+
+    // just in case the user dynamically adds more actors within f()
+    if (_actors.size() != prevActorAmount)
+      transferActors(buffers, textures, prevActorAmount, _actors);
 
     // GUI
     ImGui::Render();
@@ -601,9 +600,9 @@ void Scene::render(const Window &window, const std::function<void()> &f) {
     _dt = 1e-6f * duration_cast<microseconds>(end - start).count();
   }
 
-  glCheck(glDeleteShader(vsLoc));    // vs in vram, freeing ram
-  glCheck(glDeleteShader(fsLoc));    // fs in vram, freeing ram
-  glCheck(glDeleteProgram(program)); // program in vram, freeing ram
+  glCheck(glDeleteShader(vsLoc));     // vs in vram, freeing ram
+  glCheck(glDeleteShader(fsLoc));     // fs in vram, freeing ram
+  glCheck(glDeleteProgram(program));  // program in vram, freeing ram
 
   logMsg("[INFO] Rendering loop ended\n");
   logMsg("[INFO] Freeing GPU memory\n");
