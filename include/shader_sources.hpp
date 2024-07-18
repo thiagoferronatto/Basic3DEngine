@@ -4,7 +4,7 @@
 #include <string>
 
 static constexpr auto triangleMeshVertexShader = R"(
-#version 460
+#version 440
 
 layout (location = 0) in vec3 p;
 layout (location = 1) in vec3 n;
@@ -33,9 +33,7 @@ void main(void) {
 )";
 
 static constexpr auto triangleMeshPhongFragShader = R"(
-#version 460
-
-#extension GL_NV_fragment_shader_barycentric : require
+#version 440
 
 #define MAX_LIGHTS 100
 
@@ -65,13 +63,6 @@ in vec3 v_n;
 in vec2 v_uv;
 
 out vec4 fragColor;
-
-bool fragmentIsNearEdge(void) {
-  const float l = 0.01, u = 1.0 - l;
-  return gl_BaryCoordNV.x < l || gl_BaryCoordNV.x > u
-      || gl_BaryCoordNV.y < l || gl_BaryCoordNV.y > u
-      || gl_BaryCoordNV.z < l || gl_BaryCoordNV.z > u;
-}
 
 void main(void) {
   if (wireframe) {
@@ -125,9 +116,6 @@ void main(void) {
 
   if (toneMap)
     color = color / (color + 1.0);
-
-  if (selected && fragmentIsNearEdge())
-    color = mix(color, vec3(1, 0.5, 0), 0.75);
 
   fragColor = vec4(color, 1);
 }

@@ -2,10 +2,13 @@
 
 Window::Window(size_t width, size_t height, const char *title)
     : _width{width}, _height{height} {
-  if (!glfwInit())
-    throw std::runtime_error{"GLFW could not be initialized"};
+  if (!glfwInit()) {
+    fputs("GLFW could not be initialized\n", stderr);
+    exit(1);
+    // throw std::runtime_error{"GLFW could not be initialized"};
+  }
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
   glfwWindowHint(GLFW_SAMPLES, 8);
@@ -13,12 +16,15 @@ Window::Window(size_t width, size_t height, const char *title)
                              nullptr);
   if (!_window) {
     glfwTerminate();
-    throw std::runtime_error{"GLFW window could not be created"};
+    fputs("GLFW window could not be created\n", stderr);
+    exit(1);
+    // throw std::runtime_error{"GLFW window could not be created"};
   }
   glfwMakeContextCurrent(_window);
   if (!gladLoadGL()) {
     glfwTerminate();
-    throw std::runtime_error{"GLAD could not load OpenGL"};
+    fputs("GLAD could not load OpenGL\n", stderr);
+    // throw std::runtime_error{"GLAD could not load OpenGL"};
   }
   if (glfwRawMouseMotionSupported())
     glfwSetInputMode(_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);

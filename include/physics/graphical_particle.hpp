@@ -21,7 +21,7 @@ class GraphicalParticle : public Actor {
  protected:
  private:
   static inline TriangleMesh* particle_mesh_{
-      new TriangleMesh{TriangleMeshData::fromObj("assets/icosphere.obj")}};
+      new TriangleMesh{TriangleMeshData::cube()}};
 
   static inline size_t current_particle_id_{};
 
